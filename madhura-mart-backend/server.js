@@ -11,7 +11,7 @@ import categoryRoutes      from "./routes/categoryRoutes.js";
 import orderRoutes         from "./routes/order.js";
 import sellerRoutes        from "./routes/sellerRoutes.js";
 import subCategoriesRouter from "./routes/subCategories.js";
-import reviewRoutes        from "./routes/Reviewroutes.js";   
+import reviewRoutes        from "./routes/Reviewroutes.js";
 
 dotenv.config();
 
@@ -19,16 +19,25 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
-app.use(cors());
+// ✅ Updated CORS
+app.use(cors({
+  origin: [
+    "https://madhura-mart-frontend-4kuk.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5174"
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
-app.use("/api/auth",        authRoutes);
-app.use("/api/products",    productRoutes);
-app.use("/api/categories",  categoryRoutes);
-app.use("/api/orders",      orderRoutes);
-app.use("/api/sellers",     sellerRoutes);
+app.use("/api/auth",          authRoutes);
+app.use("/api/products",      productRoutes);
+app.use("/api/categories",    categoryRoutes);
+app.use("/api/orders",        orderRoutes);
+app.use("/api/sellers",       sellerRoutes);
 app.use("/api/subcategories", subCategoriesRouter);
-app.use("/api/reviews",     reviewRoutes);                    
+app.use("/api/reviews",       reviewRoutes);
 
 app.use("/uploads",         express.static(path.join(__dirname, "uploads")));
 app.use("/uploads/reviews", express.static(path.join(__dirname, "uploads/reviews")));
