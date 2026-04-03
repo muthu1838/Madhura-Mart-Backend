@@ -20,14 +20,22 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
+// Accept main image + up to 5 additional images
+const uploadFields = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "additionalImages", maxCount: 5 },
+]);
+
 // ── POST — create product ─────────────────────────────────────────────────────
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", uploadFields, async (req, res) => {
   try {
-    // ✅ FIX: destructure sku from req.body
     const { sku, name, price, description, category, subCategory, stock, seller, addedBy } = req.body;
 
+    const mainImage = req.files?.image?.[0]?.filename || "";
+    const additionalImages = (req.files?.additionalImages || []).map(f => f.filename);
+
     const product = new Product({
-      sku: sku?.trim() || "",          // ✅ FIX: save sku
+      sku: sku?.trim() || "",
       name,
       price,
       description: description || "",
@@ -36,7 +44,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       stock: stock !== undefined && stock !== "" ? Number(stock) : 0,
       seller: addedBy === "seller" && seller ? seller : null,
       addedBy: addedBy === "seller" ? "seller" : "admin",
-      image: req.file ? req.file.filename : "",
+      image: mainImage,
+      additionalImages,
     });
 
     await product.save();
@@ -88,10 +97,9 @@ router.get("/:id", async (req, res) => {
 });
 
 // ── PUT — update product ──────────────────────────────────────────────────────
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.put("/:id", uploadFields, async (req, res) => {
   try {
-    // ✅ FIX: destructure sku from req.body
-    const { sku, name, price, description, category, subCategory, stock, seller, addedBy } = req.body;
+    const { sku, name, price, description, category, subCategory, stock, seller, addedBy, keepAdditionalImages } = req.body;
 
     const updateData = {
       name,
@@ -101,13 +109,27 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       subCategory: subCategory || null,
     };
 
-    // ✅ FIX: update sku if provided
     if (sku !== undefined) updateData.sku = sku.trim();
-
     if (stock !== undefined && stock !== "") updateData.stock = Number(stock);
     if (addedBy)  updateData.addedBy = addedBy;
     if (seller)   updateData.seller  = seller;
-    if (req.file) updateData.image   = req.file.filename;
+
+    // Main image
+    if (req.files?.image?.[0]) updateData.image = req.files.image[0].filename;
+
+    // Additional images — append new ones to existing (if keepAdditionalImages sent) or replace
+    if (req.files?.additionalImages?.length > 0) {
+      const newImgs = req.files.additionalImages.map(f => f.filename);
+      if (keepAdditionalImages) {
+        const existing = JSON.parse(keepAdditionalImages || "[]");
+        updateData.additionalImages = [...existing, ...newImgs];
+      } else {
+        updateData.additionalImages = newImgs;
+      }
+    } else if (keepAdditionalImages) {
+      // No new uploads, but user may have removed some
+      updateData.additionalImages = JSON.parse(keepAdditionalImages || "[]");
+    }
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
