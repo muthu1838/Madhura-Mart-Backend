@@ -1,40 +1,20 @@
-const express = require("express");
+import express from "express";
+import Category from "../models/Category.js";
+import multer from "multer";
+import { storage } from "../config/cloudinaryConfig.js";
+
 const router = express.Router();
-const Category = require("../models/Category");
-const multer = require("multer");
-const path = require("path");
-
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, "category-" + Date.now() + path.extname(file.originalname));
-  },
-});
 
 const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, 
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed!"));
-    }
-  },
 });
 
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const category = new Category({
       name: req.body.name,
-      image: req.file ? req.file.filename : null,
+      image: req.file ? req.file.path : null,
     });
 
     await category.save();
@@ -74,9 +54,8 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       name: req.body.name,
     };
 
-    
     if (req.file) {
-      updateData.image = req.file.filename;
+      updateData.image = req.file.path;
     }
 
     const category = await Category.findByIdAndUpdate(
@@ -108,4 +87,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

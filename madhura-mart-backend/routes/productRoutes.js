@@ -9,16 +9,9 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, "../uploads");
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) =>
-    cb(null, `${Date.now()}-${file.originalname}`),
-});
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+import { storage } from "../config/cloudinaryConfig.js";
+
+const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
 // Accept main image + up to 5 additional images
 const uploadFields = upload.fields([
@@ -31,8 +24,8 @@ router.post("/", uploadFields, async (req, res) => {
   try {
     const { sku, name, price, description, category, subCategory, stock, seller, addedBy } = req.body;
 
-    const mainImage = req.files?.image?.[0]?.filename || "";
-    const additionalImages = (req.files?.additionalImages || []).map(f => f.filename);
+    const mainImage = req.files?.image?.[0]?.path || "";
+    const additionalImages = (req.files?.additionalImages || []).map(f => f.path);
 
     const product = new Product({
       sku: sku?.trim() || "",
@@ -115,11 +108,11 @@ router.put("/:id", uploadFields, async (req, res) => {
     if (seller)   updateData.seller  = seller;
 
     // Main image
-    if (req.files?.image?.[0]) updateData.image = req.files.image[0].filename;
+    if (req.files?.image?.[0]) updateData.image = req.files.image[0].path;
 
     // Additional images — append new ones to existing (if keepAdditionalImages sent) or replace
     if (req.files?.additionalImages?.length > 0) {
-      const newImgs = req.files.additionalImages.map(f => f.filename);
+      const newImgs = req.files.additionalImages.map(f => f.path);
       if (keepAdditionalImages) {
         const existing = JSON.parse(keepAdditionalImages || "[]");
         updateData.additionalImages = [...existing, ...newImgs];

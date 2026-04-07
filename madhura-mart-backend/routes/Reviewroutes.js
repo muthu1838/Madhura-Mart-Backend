@@ -6,33 +6,16 @@ import { fileURLToPath } from "url";
 import Review  from "../models/Review.js";
 import Product from "../models/Product.js";
 
+import { storage } from "../config/cloudinaryConfig.js";
+
 const router     = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
 /* ── Multer config ── */
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, "../uploads/reviews");
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `rev-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
-});
-
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|webp|gif|mp4|mov|webm/;
-    const ok =
-      allowed.test(path.extname(file.originalname).toLowerCase()) &&
-      allowed.test(file.mimetype);
-    ok ? cb(null, true) : cb(new Error("Only images and videos are allowed"));
-  },
+  limits: { fileSize: 100 * 1024 * 1024 }, // Increased for videos
 });
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -156,8 +139,8 @@ router.post(
       if (existing)
         return res.status(400).json({ message: "You have already reviewed this product" });
 
-      const images = (req.files?.images || []).map(f => `/uploads/reviews/${f.filename}`);
-      const videos = (req.files?.videos || []).map(f => `/uploads/reviews/${f.filename}`);
+      const images = (req.files?.images || []).map(f => f.path);
+      const videos = (req.files?.videos || []).map(f => f.path);
 
       const review = await Review.create({
         product:  productId,
@@ -225,10 +208,7 @@ router.delete("/:reviewId", protect, async (req, res) => {
     if (String(review.user) !== String(req.user._id) && !req.user.isAdmin)
       return res.status(403).json({ message: "Not authorised" });
 
-    [...review.images, ...review.videos].forEach(filePath => {
-      const abs = path.join(__dirname, "..", filePath);
-      if (fs.existsSync(abs)) fs.unlinkSync(abs);
-    });
+    // Cloudinary files are not deleted here for now
 
     await review.deleteOne();
 

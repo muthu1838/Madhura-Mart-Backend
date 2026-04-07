@@ -11,28 +11,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 const router     = express.Router();
 
-// ── Multer Storage ────────────────────────────────────────────────────────────
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, "../uploads");
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) =>
-    cb(null, `seller_${Date.now()}_${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`),
-});
+import { storage } from "../config/cloudinaryConfig.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
+const router     = express.Router();
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|webp|pdf/i;
-    if (allowed.test(path.extname(file.originalname)) && allowed.test(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only images (JPG, PNG, WebP) and PDF files are allowed"));
-    }
-  },
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 // ✅ All 4 file fields from frontend
@@ -106,8 +93,8 @@ router.post("/register", uploadFields, async (req, res) => {
       ifsc:          (ifsc || "").toUpperCase().trim(),
       upiId:         upiId         || "",
 
-      logo:         req.files?.logo?.[0]?.filename         || "",
-      certDocument: req.files?.certDocument?.[0]?.filename || "",
+      logo:         req.files?.logo?.[0]?.path         || "",
+      certDocument: req.files?.certDocument?.[0]?.path || "",
 
       status: "pending",
     });
@@ -256,12 +243,8 @@ router.put("/:id", uploadFields, async (req, res) => {
     };
 
     // ── Handle logo upload ───────────────────────────────────────────────────
-    if (req.files?.logo?.[0]?.filename) {
-      if (seller.logo) {
-        const oldPath = path.join(__dirname, "../uploads", seller.logo);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
-      updateData.logo = req.files.logo[0].filename;
+    if (req.files?.logo?.[0]?.path) {
+      updateData.logo = req.files.logo[0].path;
     }
 
     const updated = await Seller.findByIdAndUpdate(
@@ -303,12 +286,7 @@ router.delete("/:id", async (req, res) => {
     const seller = await Seller.findById(req.params.id);
     if (!seller) return res.status(404).json({ message: "Seller not found" });
 
-    for (const field of ["logo", "certDocument"]) {
-      if (seller[field]) {
-        const filePath = path.join(__dirname, "../uploads", seller[field]);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      }
-    }
+    // Cloudinary files are not deleted here for now
 
     await Seller.findByIdAndDelete(req.params.id);
     res.json({ message: "Seller deleted successfully" });
