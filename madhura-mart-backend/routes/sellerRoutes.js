@@ -13,10 +13,6 @@ const router     = express.Router();
 
 import { storage } from "../config/cloudinaryConfig.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
-const router     = express.Router();
-
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },
