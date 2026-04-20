@@ -23,6 +23,8 @@ const uploadFields = upload.fields([
 router.post("/", uploadFields, async (req, res) => {
   try {
     const { sku, name, price, description, category, subCategory, stock, seller, addedBy } = req.body;
+    const highlights = req.body.highlights ? JSON.parse(req.body.highlights) : [];
+    const specifications = req.body.specifications ? JSON.parse(req.body.specifications) : [];
 
     const mainImage = req.files?.image?.[0]?.path || "";
     const additionalImages = (req.files?.additionalImages || []).map(f => f.path);
@@ -39,6 +41,8 @@ router.post("/", uploadFields, async (req, res) => {
       addedBy: addedBy === "seller" ? "seller" : "admin",
       image: mainImage,
       additionalImages,
+      highlights: highlights || [],
+      specifications: specifications || [],
     });
 
     await product.save();
@@ -100,6 +104,8 @@ router.put("/:id", uploadFields, async (req, res) => {
       description: description || "",
       category:    category    || null,
       subCategory: subCategory || null,
+      highlights:  req.body.highlights ? JSON.parse(req.body.highlights) : [],
+      specifications: req.body.specifications ? JSON.parse(req.body.specifications) : [],
     };
 
     if (sku !== undefined) updateData.sku = sku.trim();
