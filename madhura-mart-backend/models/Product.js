@@ -11,9 +11,17 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    subtitle: {
+      type: String,
+      default: "",
+    },
     price: {
       type: Number,
       required: true,
+    },
+    discountPercentage: {
+      type: Number,
+      default: 0,
     },
     description: {
       type: String,
