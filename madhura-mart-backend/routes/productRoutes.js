@@ -22,7 +22,7 @@ const uploadFields = upload.fields([
 // ── POST — create product ─────────────────────────────────────────────────────
 router.post("/", uploadFields, async (req, res) => {
   try {
-    const { sku, name, subtitle, price, originalPrice, discountPercentage, description, category, subCategory, stock, seller, addedBy } = req.body;
+    const { sku, name, subtitle, price, originalPrice, discountPercentage, rating, reviewCount, isTopRated, isHotDeal, description, category, subCategory, stock, seller, addedBy } = req.body;
     const highlights = req.body.highlights ? JSON.parse(req.body.highlights) : [];
     const specifications = req.body.specifications ? JSON.parse(req.body.specifications) : [];
 
@@ -36,6 +36,10 @@ router.post("/", uploadFields, async (req, res) => {
       price,
       originalPrice: originalPrice || 0,
       discountPercentage: discountPercentage !== undefined ? Number(discountPercentage) : 0,
+      rating: rating !== undefined ? Number(rating) : 0,
+      reviewCount: reviewCount !== undefined ? Number(reviewCount) : 0,
+      isTopRated: isTopRated === "true" || isTopRated === true,
+      isHotDeal: isHotDeal === "true" || isHotDeal === true,
       description: description || "",
       category: category || null,
       subCategory: subCategory || null,
@@ -99,7 +103,7 @@ router.get("/:id", async (req, res) => {
 // ── PUT — update product ──────────────────────────────────────────────────────
 router.put("/:id", uploadFields, async (req, res) => {
   try {
-    const { sku, name, subtitle, price, originalPrice, discountPercentage, description, category, subCategory, stock, seller, addedBy, keepAdditionalImages } = req.body;
+    const { sku, name, subtitle, price, originalPrice, discountPercentage, rating, reviewCount, isTopRated, isHotDeal, description, category, subCategory, stock, seller, addedBy, keepAdditionalImages } = req.body;
 
     const updateData = {
       name,
@@ -107,6 +111,10 @@ router.put("/:id", uploadFields, async (req, res) => {
       price,
       originalPrice: originalPrice || 0,
       discountPercentage: discountPercentage !== undefined ? Number(discountPercentage) : 0,
+      rating: rating !== undefined ? Number(rating) : 0,
+      reviewCount: reviewCount !== undefined ? Number(reviewCount) : 0,
+      isTopRated: isTopRated === "true" || isTopRated === true,
+      isHotDeal: isHotDeal === "true" || isHotDeal === true,
       description: description || "",
       category:    category    || null,
       subCategory: subCategory || null,
