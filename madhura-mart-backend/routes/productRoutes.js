@@ -22,7 +22,7 @@ const uploadFields = upload.fields([
 // ── POST — create product ─────────────────────────────────────────────────────
 router.post("/", uploadFields, async (req, res) => {
   try {
-    const { sku, name, subtitle, price, originalPrice, discountPercentage, description, category, subCategory, stock, seller, addedBy } = req.body;
+    const { sku, name, subtitle, price, originalPrice, discountPercentage, description, category, subCategory, stock, seller, addedBy, metric } = req.body;
     const highlights = req.body.highlights ? JSON.parse(req.body.highlights) : [];
     const specifications = req.body.specifications ? JSON.parse(req.body.specifications) : [];
 
@@ -46,6 +46,7 @@ router.post("/", uploadFields, async (req, res) => {
       additionalImages,
       highlights: highlights || [],
       specifications: specifications || [],
+      metric: metric || "",
     });
 
     await product.save();
@@ -99,7 +100,7 @@ router.get("/:id", async (req, res) => {
 // ── PUT — update product ──────────────────────────────────────────────────────
 router.put("/:id", uploadFields, async (req, res) => {
   try {
-    const { sku, name, subtitle, price, originalPrice, discountPercentage, description, category, subCategory, stock, seller, addedBy, keepAdditionalImages } = req.body;
+    const { sku, name, subtitle, price, originalPrice, discountPercentage, description, category, subCategory, stock, seller, addedBy, keepAdditionalImages, metric } = req.body;
 
     const updateData = {
       name,
@@ -112,6 +113,7 @@ router.put("/:id", uploadFields, async (req, res) => {
       subCategory: subCategory || null,
       highlights:  req.body.highlights ? JSON.parse(req.body.highlights) : [],
       specifications: req.body.specifications ? JSON.parse(req.body.specifications) : [],
+      metric: metric !== undefined ? metric : "",
     };
 
     if (sku !== undefined) updateData.sku = sku.trim();

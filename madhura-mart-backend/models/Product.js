@@ -72,6 +72,10 @@ const productSchema = new mongoose.Schema(
         value: { type: String, default: "" },
       },
     ],
+    metric: {
+      type: String,
+      default: "",
+    },
     isActive: {
       type: Boolean,
       default: true,
