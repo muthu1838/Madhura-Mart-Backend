@@ -13,6 +13,7 @@ import sellerRoutes        from "./routes/sellerRoutes.js";
 import subCategoriesRouter from "./routes/subCategories.js";
 import reviewRoutes        from "./routes/Reviewroutes.js";
 import adminRoutes         from "./routes/adminRoutes.js";
+import shiprocketRoutes    from "./routes/shiprocketRoutes.js";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use("/api/sellers",       sellerRoutes);
 app.use("/api/subcategories", subCategoriesRouter);
 app.use("/api/reviews",       reviewRoutes);
 app.use("/api/admin",         adminRoutes);
+app.use("/api/shiprocket",    shiprocketRoutes);
 
 app.use("/uploads",         express.static(path.join(__dirname, "uploads")));
 app.use("/uploads/reviews", express.static(path.join(__dirname, "uploads/reviews")));

@@ -11,7 +11,7 @@ router.post("/", async (req, res) => {
 
     const {
       customerName, mobile, email, customerEmail,
-      address, products, totalAmount, paymentMethod,
+      address, products, totalAmount, paymentMethod, expectedDelivery
     } = req.body;
 
     if (!customerName || !mobile || !address || !products?.length || !totalAmount) {
@@ -79,6 +79,7 @@ router.post("/", async (req, res) => {
         image:     String(p.image || ""),
       })),
       totalAmount:   Number(totalAmount),
+      expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
       paymentMethod: paymentMethod || "cod",
       status:        "Pending",
     });
