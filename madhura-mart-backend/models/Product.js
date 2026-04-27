@@ -72,6 +72,12 @@ const productSchema = new mongoose.Schema(
         value: { type: String, default: "" },
       },
     ],
+    offers: [
+      {
+        label: { type: String, default: "" },
+        text:  { type: String, default: "" },
+      },
+    ],
     metric: {
       type: String,
       default: "",

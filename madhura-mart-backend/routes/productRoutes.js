@@ -25,6 +25,7 @@ router.post("/", uploadFields, async (req, res) => {
     const { sku, name, subtitle, price, originalPrice, discountPercentage, description, category, subCategory, stock, seller, addedBy, metric } = req.body;
     const highlights = req.body.highlights ? JSON.parse(req.body.highlights) : [];
     const specifications = req.body.specifications ? JSON.parse(req.body.specifications) : [];
+    const offers = req.body.offers ? JSON.parse(req.body.offers) : [];
 
     const mainImage = req.files?.image?.[0]?.path || "";
     const additionalImages = (req.files?.additionalImages || []).map(f => f.path);
@@ -46,6 +47,7 @@ router.post("/", uploadFields, async (req, res) => {
       additionalImages,
       highlights: highlights || [],
       specifications: specifications || [],
+      offers: offers || [],
       metric: metric || "",
     });
 
@@ -113,6 +115,7 @@ router.put("/:id", uploadFields, async (req, res) => {
       subCategory: subCategory || null,
       highlights:  req.body.highlights ? JSON.parse(req.body.highlights) : [],
       specifications: req.body.specifications ? JSON.parse(req.body.specifications) : [],
+      offers: req.body.offers ? JSON.parse(req.body.offers) : [],
       metric: metric !== undefined ? metric : "",
     };
 
