@@ -15,6 +15,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     const category = new Category({
       name: req.body.name,
       image: req.file ? req.file.path : null,
+      deal: req.body.deal || "",
     });
 
     await category.save();
@@ -52,6 +53,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
   try {
     const updateData = {
       name: req.body.name,
+      deal: req.body.deal,
     };
 
     if (req.file) {

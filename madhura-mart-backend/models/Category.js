@@ -9,6 +9,10 @@ const categorySchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  deal: {
+    type: String,
+    default: "",
+  },
 }, {
   timestamps: true
 });
