@@ -61,4 +61,32 @@ router.put("/settings", async (req, res) => {
   }
 });
 
+// ── Home Page Configuration ───────────────────────────────────────────────────
+
+router.get("/home-config", async (req, res) => {
+  try {
+    const admin = await Admin.findOne();
+    if (!admin) return res.status(404).json({ success: false, message: "Admin not found" });
+    res.json({ success: true, homeConfig: admin.homeConfig || {} });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.put("/home-config", async (req, res) => {
+  try {
+    const admin = await Admin.findOne();
+    if (!admin) return res.status(404).json({ success: false, message: "Admin not found" });
+
+    // Deep merge: spread top-level, then allow full replacement
+    admin.homeConfig = { ...(admin.homeConfig || {}), ...req.body };
+    admin.markModified("homeConfig"); // Required for Mixed type fields
+    await admin.save();
+
+    res.json({ success: true, message: "Home config saved successfully", homeConfig: admin.homeConfig });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
